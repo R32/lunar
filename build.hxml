@@ -1,0 +1,11 @@
+-dce full
+-main test.Test
+
+--each
+-js bin/test.js
+
+--next
+-hl bin/test.hl
+
+--next
+-swf bin/test.swf
