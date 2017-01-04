@@ -2,19 +2,39 @@ package test;
 
 import haxe.PosInfos;
 import lunar.Lunar;
+import lunar.Label;
+import lunar.Utils;
 
 class Test {
 
 	static function main() {
 		lunarmake();
 		@:privateAccess Lunar.CACHES.splice(1, Lunar.CACHES.length - 1);
-		trace("----------------");
-		lunarspec();
+		//trace("----------------");
+		//lunarspec();
 
 		//for (d in @:privateAccess Lunar.CACHES) {
 		//	var info = new Info(d.getFullYear());
 			//trace(simpledate(d) + "\t" + info);
 		//}
+#if !(hl || neko)
+		testlabel();
+#end
+	}
+
+	static function testlabel() {
+		//trace("indexSx: 2016 == 8, 2000 == 4; " + (Utils.indexSx(2016) == 8 && Utils.indexSx(2000) == 4));
+		var len = data.length;
+		data.push(["", 1986, 10, 10, false]);
+		data.push(["", 2010, 10, 20, false]);
+		for(ld in data) {
+			var lunar = Lunar.spec(ld[1], ld[2], ld[3], ld[4]);
+			var label = new Label(lunar);
+			var time = lunar.time;
+			trace("农历: " + label.toString() + ', 公历: "${time.getFullYear()}-${time.getMonth() + 1}-${time.getDate()}"');
+		}
+		// restore
+		data.splice(len, 2);
 	}
 
 	static var data:Array<Dynamic> = [
