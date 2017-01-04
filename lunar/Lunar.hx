@@ -127,7 +127,7 @@ class Lunar {
 		// 日
 		ds += ld - 1;
 		var time = Date.fromTime(start.getTime() + ds *  MICROSECONDS_IN_DAY);
-		return new Lunar(ly, lm, ld, onleap, ds, time, info);
+		return new Lunar(ly, lm, ld, onleap && info.leap == lm, ds, time, info);
 	}
 
 	static function push2Caches(i:Int, diff:Int):Void { // 如果 diff
