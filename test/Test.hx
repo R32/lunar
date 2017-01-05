@@ -4,6 +4,8 @@ import haxe.PosInfos;
 import lunar.Lunar;
 import lunar.Label;
 import lunar.Utils;
+import lunar.Lottery;
+import lunar.Data;
 
 class Test {
 
@@ -20,6 +22,54 @@ class Test {
 #if !(hl || neko)
 		testlabel();
 #end
+		testLollery();
+	}
+
+	static function testLollery() {
+		var balls = new Balls(2016);
+		var hash = [
+			[1, 2, 7, 8, 12, 13, 18, 19, 23, 24, 29, 30, 34, 35, 40, 45, 46]
+			=> function(i:Int, attr:Attr):Bool {
+				return attr.color == Red;
+			},
+
+			[5, 6, 11, 16, 17, 21, 22, 27, 28, 32, 33, 38, 39, 43, 44, 49]
+			=> function(i:Int, attr:Attr):Bool {
+				return attr.color == Green;
+			},
+
+			[3, 4, 9, 10, 14, 15, 20, 25, 26, 31, 36, 37, 41, 42, 47, 48]
+			=> function(i:Int, attr:Attr):Bool {
+				return attr.color == Blue;
+			},
+
+			[9, 21, 33, 45]
+			=> function(i:Int, attr:Attr):Bool {
+				return attr.xiao == Shu;
+			},
+			[1, 13, 25, 37, 49]
+			=> function(i:Int, attr:Attr):Bool {
+				return attr.xiao == Hou;
+			},
+			[10, 22, 34, 46]
+			=> function(i:Int, attr:Attr):Bool {
+				return attr.xiao == Zhu;
+			},
+		];
+
+		trace("Lollery begin >>>");
+
+		for (k in hash.keys()) {
+			var result = balls.filter(hash.get(k));
+			if (!eqa(result, k))
+				trace("Lollery Fails . result is : [" + result.join(","));
+		}
+		for (x in 0...12) {
+			trace(Data.SX_CN[x] + ": [" +balls.filter(function(i, attr){
+				return attr.xiao == cast x;
+			}).join(", "));
+		}
+		trace("<<< Lollery end");
 	}
 
 	static function testlabel() {
@@ -93,6 +143,13 @@ class Test {
 		} else {
 			trace("FAIL > " + lunar.toString() + ' {$sd == [$ly, $lm, $ld, $onleap]}');
 		}
+	}
+
+	static public function eqa<T>(a:Array<T>, b:Array<T>):Bool {
+		if (a.length != b.length) return false;
+		for (i in 0...a.length)
+			if (a[i] != b[i]) return false;
+		return true;
 	}
 
 	static public function simpledate(d: Date) {
