@@ -3,7 +3,7 @@
   "url": "https://github.com/r32/lunar",
   "license": "BSD",
   "tags": ["lunar", "农历"],
-  "description": "Conversion of Chinese Lunar Calendar(1900~2010) - 农历/公历转换",
+  "description": "Conversion of Chinese Lunar Calendar(1900~2100) - 农历/公历转换",
   "releasenote": "See https://github.com/r32/lunar",
   "version": "0.1.0",
   "contributors": ["r32"]
