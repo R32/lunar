@@ -1,44 +1,22 @@
 package lunar;
 
 /**
-R, G, B 这三个数组的值是固定的不会因年份而改变, 但 horos 将会跟随农历年做变化
-
-
-关于数值保存的结构设计:
-
-如果是链表，但为每一个数字都构造一个块，而且每次内存申请可能会导致碎片化, 而且浪费内存
-
-块根:      16 字节.
-prev,next: 8 (4x2)
-data_len:  1, 如果一个块超过了这个大小(255)，则自动拆分成二个块, 因为 UI 那边也显示不了这么多一行
-data_cap:  1
-value:     4
-data[2]:   2, min=2
----------------
-           (32-30)/(64-30)/(96-30)/(128-30) 保证每一个块都是 40 的整倍数, 这样在重复申请内存时可避免碎片化
-
-假设每人有 1000 个数据，平均每个占 40+字节，也才 40Kb 而已，100 个人 也 4M 而已. 似乎没什么压力
-
-
-如何序列化数据，以存盘和读取? 并且保存整个链表的关系? 虽然整个内存块可以直接读取???
-
-length|value|data[]|length|value|data[]这种大块结构
+ TODO
 */
-class Lottery {
+class Lottery {}
 
-	public function new() {
-		throw "TODO";
-	}
-}
+/**
+ R, G, B 这三个数组的值是固定的不会因年份而改变, 但 生肖 将会跟随农历年做变化
+*/
+@:native("LtBalls") abstract Balls(haxe.ds.Vector<Int>) {
 
-@:native("LtBalls") abstract Balls(haxe.io.Bytes) to haxe.io.Bytes {
-
-	public inline function get(ball: Int): Attr return cast this.get(ball);
-	public inline function set(ball: Int, attr: Attr) this.set(ball, attr);
+	public inline function get(i: Int): Attr return cast this.get(i);
+	public inline function set(i: Int, attr: Attr) this.set(i, attr);
 
 	// 农历年, 4位格式
 	public function new(ly: Int) {
-		this = cast haxe.io.Bytes.alloc(MAX50);
+		this = new haxe.ds.Vector<Int>(MAX50);
+		this[0] = 0;
 		// R
 		initColor(1, 11, Red);
 		initColor(2, 11, Red);
@@ -75,27 +53,27 @@ class Lottery {
 
 	public function filter(func: Int->Attr->Bool): Array<Int> {
 		var ret = [];
-		for (ball in 1...MAX50) { // Note: begin from 1
-			if (func(ball, get(ball))) ret.push(ball);
+		for (i in 1...MAX50) { // Note: begin from 1
+			if (func(i, get(i))) ret.push(i);
 		}
 		return ret;
 	}
 
-	// [ball, MAX50)
-	function initColor(ball: Int, step: Int, c: Color): Void {
-		while (ball < MAX50) {
-			set(ball, Attr.from(c, cast 0));
-		ball += step;
+	// [i, MAX50)
+	function initColor(i: Int, step: Int, c: Color): Void {
+		while (i < MAX50) {
+			set(i, Attr.from(c, cast 0));
+			i += step;
 		}
 	}
 
-	function padXiao(ball: Int, step: Int, x: Xiao): Void {
+	function padXiao(i: Int, step: Int, x: Xiao): Void {
 		var t: Attr;
-		while (ball < MAX50) {
-			t = get(ball);
+		while (i < MAX50) {
+			t = get(i);
 			t.xiao = x;
-			set(ball, t);
-		ball += step;
+			this.set(i, t);
+			i += step;
 		}
 	}
 
