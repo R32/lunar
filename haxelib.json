@@ -2,9 +2,9 @@
   "name": "lunar",
   "url": "https://github.com/r32/lunar",
   "license": "BSD",
-  "tags": ["lunar", "农历"],
-  "description": "Conversion of Chinese Lunar Calendar(1900~2100) - 农历/公历转换",
+  "tags": ["Chinese Lunar"],
+  "description": "Chinese Lunar Conversion[1900-2100]",
   "releasenote": "See https://github.com/r32/lunar",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "contributors": ["r32"]
 }
