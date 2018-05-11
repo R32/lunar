@@ -1,11 +1,17 @@
 -dce full
+-D analyzer-optimize
+-D old-error-format
 -main test.Test
 
 --each
+--macro exclude('js.html.compat')
 -js bin/test.js
 
 --next
 -hl bin/test.hl
+
+--next
+-neko bin/test.n
 
 --next
 -swf bin/test.swf

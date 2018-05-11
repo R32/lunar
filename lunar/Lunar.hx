@@ -1,6 +1,6 @@
 package lunar;
 
-class Lunar {
+@:native("Lunar") class Lunar {
 
 	public var time(default, null):Date; // 公历时间
 	public var info(default, null):Info;
@@ -22,7 +22,7 @@ class Lunar {
 	}
 
 	public function toString():String {
-		return '[lunar: ${this.year}, ${this.month}, ${this.date}, ${this.leap}, ${days}]';
+		return '[lunar: ${year}, ${month}, ${date}, ${leap}, ${days}]';
 	}
 
 	public static inline function now():Lunar {
@@ -30,46 +30,23 @@ class Lunar {
 	}
 
 	public static function make(time: Date) {
-		var diff:Int;
-		var start:Date;
-
-		var cur = time.getTime();
-		if (cur < -2206425600000) throw "Less than 1900-01-31";
-
+		var h = Std.int(time.getTime() / MICROSECONDS_IN_HOUR);
 		var tyear = time.getFullYear();
-		do {
-			if (tyear < Info.DAT_START || tyear >= (Info.DAT_START + Info.DAT_LENGTH) )
-				throw "out of range!";
-			var index = Info.index(tyear);
-			start = CACHES.length > index ? CACHES[index] : CACHES[CACHES.length - 1];
-			diff = Std.int((cur - start.getTime()) / MICROSECONDS_IN_DAY);
+		var start = getCacheByYear(tyear);
+		var diff = Std.int((h - start) / 24);  // HOURS to DAYS
+		if (diff < 0) {
 			--tyear;
-		} while (diff < 0);
-
-		// 从农历的 1 月初 1 开始累加, （为了降低复杂性不再像旧版本那样反向查找）
-		tyear = start.getFullYear();
-		var tinfo = new Info(tyear);
-		var t = 0;
-		// 年
-		for (i in Info.index(tyear)...Info.DAT_LENGTH) {
-			t = tinfo.daysofYear();
-			if (diff > t) {
-				push2Caches(i + 1, t);
-				++tyear;
-				tinfo.reset(tyear);
-				diff -= t;
-			} else {
-				break;
-			}
+			start = getCacheByYear(tyear);
+			diff = Std.int((h - start) / 24);
 		}
-
 		var ds = diff;
+		var tinfo = new Info(tyear);
 		// 月
 		var tmonth = 1;
 		var tdate = 1;
 		var tleap = false;
 		for (i in 0...12) {
-			t = tinfo.isBigMonth(tmonth) ? 30 : 29;
+			var t = tinfo.isBigMonth(tmonth) ? 30 : 29;
 			if (diff > t) {
 				++tmonth;
 				diff -= t;
@@ -77,7 +54,7 @@ class Lunar {
 				break;
 			}
 			if (tinfo.leap == tmonth - 1) {
-				t = tinfo.leapbig ? 30 : 29;
+				var t = tinfo.leapbig ? 30 : 29;
 				if (diff > t) {
 					diff -= t;
 					tleap = false;
@@ -101,18 +78,7 @@ class Lunar {
 	* @return
 	*/
 	public static function spec(ly:Int, lm:Int, ld:Int, onleap:Bool):Lunar {
-
-		var index = Info.index(ly);
-
-		if (CACHES.length <= index) { // make caches
-			var last = CACHES.length - 1;
-			while (last < index) {
-				var tinfo = new Info(last + Info.DAT_START);
-				++ last;
-				push2Caches(last, tinfo.daysofYear());
-			}
-		}
-		var start = CACHES[index];
+		var start = getCacheByYear(ly);
 		var info = new Info(ly);
 		var ds = 0;
 		// 月
@@ -126,30 +92,37 @@ class Lunar {
 		}
 		// 日
 		ds += ld - 1;
-		var time = Date.fromTime(start.getTime() + ds *  MICROSECONDS_IN_DAY);
+		var time = Date.fromTime((start + ds * 24) * MICROSECONDS_IN_HOUR);
 		return new Lunar(ly, lm, ld, onleap && info.leap == lm, ds, time, info);
 	}
 
-	static function push2Caches(i:Int, diff:Int):Void { // 如果 diff
-		if (CACHES.length == i) {
-			var c = CACHES[i - 1];
-			CACHES.push(Date.fromTime(c.getTime() + diff * MICROSECONDS_IN_DAY));
+	static inline function getCacheByYear(y: Int) return getCache(y - Info.DAT_START);
+
+	static function getCache(i: Int): Int {
+		if (CACHES == null) {
+			CACHES = new haxe.ds.Vector<Int>(Info.DAT_LENGTH);
+			#if !(hl || neko || macro || eval)
+			CACHES[0] = Std.int(new Date(1900, 0, 31, 0, 0, 0).getTime() / MICROSECONDS_IN_HOUR);
+			#else
+			CACHES[0] = Std.int(new Date(1970, 1, 6, 0, 0, 0).getTime() / MICROSECONDS_IN_HOUR);
+			#end
+			CI = 1;
 		}
+		while (i >= CI) {
+			var c = CACHES[CI - 1];
+			var info = new Info(CI + (Info.DAT_START - 1)); // (CI - 1 + DAT_START)
+			CACHES[CI++] = c + info.daysofYear() * 24;
+		}
+		return CACHES.get(i);
 	}
 
-	public static inline var MICROSECONDS_IN_DAY = 24 * 60 * 60 * 1000 * 1.0;
-
-	/**
-	* 缓存农历每一年 1 月 1 号所对应的公历 Date
-	*/
-#if !(hl || neko)
-	static var CACHES:Array<Date> = [new Date(1900, 0, 31, 0, 0, 0)];
-#else
-	static var CACHES:Array<Date> = [new Date(1970, 1,  6, 0, 0, 0)];
-#end
+	static var CI: Int;
+	static var CACHES: haxe.ds.Vector<Int>;
+	public static inline var MICROSECONDS_IN_HOUR = 1.0 * 60 * 60 * 1000;
 }
 
-abstract Info(Int) {
+@:allow(lunar.Lunar)
+@:native("LInfo") abstract Info(Int) {
 
 	public var leap(get, never): Int;
 	public var bmonths(get, never): Int;
@@ -167,7 +140,6 @@ abstract Info(Int) {
 	inline public function reset(lyear: Int) this = DAT[index(lyear)];
 
 	inline function leapDays() return leap > 0 ? (leapbig ? 30 : 29) : 0;
-
 	/**
 	* 返回整个一年的天数
 	*/
@@ -180,13 +152,13 @@ abstract Info(Int) {
 	}
 
 	/**
-	* m in 1~12
+	* m in [1-12]
 	*/
 	inline public function isBigMonth(m:Int): Bool {
 		return this & (1 << (16 - m)) != 0;
 	}
 
-	public function toString() {
+	public inline function toString() {
 		return '[dat: 0x${StringTools.hex(this, 5)}, leap: ${leap}, leapbig: ${leapbig}, bmonths: ${binString(bmonths, 12)}]';
 	}
 
@@ -201,8 +173,8 @@ abstract Info(Int) {
 
 	public static inline function index(ly:Int) return ly - DAT_START;
 
-#if !(hl || neko)
-	public static inline var DAT_START = 1900;  // 只能计算 1900~2100
+#if !(hl || neko || macro || eval)
+	public static inline var DAT_START = 1900;  // 只能计算 [1900~2100]
 	public static inline var DAT_LENGTH = 2100 - 1900 + 1;
 #else
 	public static inline var DAT_START = 1970;  // hashlink 只能计算 1970 之后的年份
@@ -219,7 +191,7 @@ abstract Info(Int) {
 	 数据复制来自 https://github.com/QingYolan/Calendar/blob/gh-pages/js/data.js , 2050 年以后的数据正确性未知
 	*/
 	static var DAT = [
-	#if !(hl || neko)
+	#if !(hl || neko || macro || eval)
 		0x04bd8, 0x04ae0, 0x0a570, 0x054d5, 0x0d260,
 		0x0d950, 0x16554, 0x056a0, 0x09ad0, 0x055d2,
 		0x04ae0, 0x0a5b6, 0x0a4d0, 0x0d250, 0x1d255,

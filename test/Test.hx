@@ -7,91 +7,77 @@ import lunar.Utils;
 import lunar.Lottery;
 import lunar.Data;
 
-class Test {
+@:access(lunar) class Test {
 
 	static function main() {
 		lunarmake();
-		@:privateAccess Lunar.CACHES.splice(1, Lunar.CACHES.length - 1);
-		//trace("----------------");
-		//lunarspec();
-
-		//for (d in @:privateAccess Lunar.CACHES) {
-		//	var info = new Info(d.getFullYear());
-			//trace(simpledate(d) + "\t" + info);
-		//}
-#if !(hl || neko)
-		testlabel();
-#end
+		lunarspec();
+		//testlabel();
 		testLollery();
+		trace("done!");
 	}
 
 	static function testLollery() {
 		var balls = new Balls(2016);
-		var hash = [
-			[1, 2, 7, 8, 12, 13, 18, 19, 23, 24, 29, 30, 34, 35, 40, 45, 46]
-			=> function(i:Int, attr:Attr):Bool {
-				return attr.color == Red;
+		var values = [
+			{
+				data: [1, 2, 7, 8, 12, 13, 18, 19, 23, 24, 29, 30, 34, 35, 40, 45, 46],
+				fn: function(i:Int, attr:Attr):Bool {return attr.color == Red;},
+			} ,
+			{
+				data: [5, 6, 11, 16, 17, 21, 22, 27, 28, 32, 33, 38, 39, 43, 44, 49],
+				fn: function(i:Int, attr:Attr):Bool {return attr.color == Green;},
 			},
-
-			[5, 6, 11, 16, 17, 21, 22, 27, 28, 32, 33, 38, 39, 43, 44, 49]
-			=> function(i:Int, attr:Attr):Bool {
-				return attr.color == Green;
+			{
+				data: [3, 4, 9, 10, 14, 15, 20, 25, 26, 31, 36, 37, 41, 42, 47, 48],
+				fn: function(i:Int, attr:Attr):Bool {return attr.color == Blue;},
 			},
-
-			[3, 4, 9, 10, 14, 15, 20, 25, 26, 31, 36, 37, 41, 42, 47, 48]
-			=> function(i:Int, attr:Attr):Bool {
-				return attr.color == Blue;
+			{
+				data: [9, 21, 33, 45],
+				fn: function(i:Int, attr:Attr):Bool {return attr.xiao == Shu;},
 			},
-
-			[9, 21, 33, 45]
-			=> function(i:Int, attr:Attr):Bool {
-				return attr.xiao == Shu;
+			{
+				data: [1, 13, 25, 37, 49],
+				fn: function(i:Int, attr:Attr):Bool {return attr.xiao == Hou;},
 			},
-			[1, 13, 25, 37, 49]
-			=> function(i:Int, attr:Attr):Bool {
-				return attr.xiao == Hou;
-			},
-			[10, 22, 34, 46]
-			=> function(i:Int, attr:Attr):Bool {
-				return attr.xiao == Zhu;
+			{
+				data: [10, 22, 34, 46],
+				fn: function(i:Int, attr:Attr):Bool {return attr.xiao == Zhu;},
 			},
 		];
-
-		trace("Lollery begin >>>");
-
-		for (k in hash.keys()) {
-			var result = balls.filter(hash.get(k));
-			if (!eqa(result, k))
-				trace("Lollery Fails . result is : [" + result.join(","));
+		for (i in 0...values.length) {
+			var item = values[i];
+			var result = balls.filter(item.fn);
+			if (!eqa(result, item.data))
+				throw ("Lollery Fails: "+ i +" > d: " + item.data.toString() + " == r: " + result.toString());
 		}
-		for (x in 0...12) {
-			trace(Data.SX_CN[x] + ": [" +balls.filter(function(i, attr){
-				return attr.xiao == cast x;
-			}).join(", "));
-		}
-		trace("<<< Lollery end");
 	}
 
 	static function testlabel() {
-		//trace("indexSx: 2016 == 8, 2000 == 4; " + (Utils.indexSx(2016) == 8 && Utils.indexSx(2000) == 4));
-		var len = data.length;
-		data.push(["", 1986, 10, 10, false]);
-		data.push(["", 2010, 10, 20, false]);
+	#if !(neko || eval || macro)
 		for(ld in data) {
 			var lunar = Lunar.spec(ld[1], ld[2], ld[3], ld[4]);
 			var label = new Label(lunar);
 			var time = lunar.time;
-			trace("农历: " + label.toString() + ', 公历: "${time.getFullYear()}-${time.getMonth() + 1}-${time.getDate()}"');
+			trace("农历: " + label.toString() + ', :[${ld.join(",")}]');
 		}
-		// restore
-		data.splice(len, 2);
+	#end
 	}
 
 	static var data:Array<Dynamic> = [
+		// date,      lyear, lm, ld, isLeap
+		["1970-02-07", 1970, 1, 2, false],
+		["2017-02-09", 2017, 1, 13, false],
 		["2017-07-25", 2017, 6, 3, true],
 		["2017-06-26", 2017, 6, 3, false],
+		["1986-11-11", 1986, 10, 10, false],
+		["2010-11-25", 2010, 10, 20, false],
 #if !(hl || neko)
+		["1970-02-06", 1970, 1, 1, false],
+		["1970-01-01", 1969, 11, 24, false],
+		["1970-01-02", 1969, 11, 25, false],
 		["1900-01-31", 1900, 1, 1, false],
+		["1901-02-20", 1901, 1, 2, false],
 		["2099-01-08", 2098, 12,18, false],
 		["2100-01-29", 2099, 12,20, false],
 #end
@@ -104,44 +90,29 @@ class Test {
 
 	static function lunarspec() {
 		for (o in data) {
-			var lunar = Lunar.spec(o[1], o[2], o[3], o[4]);
-		#if !(hl || neko)
-			var date = Date.fromString(o[0]);
-		#else
-			var a = (o[0]:String).split("-");
-			var date = new Date(Std.parseInt(a[0]), Std.parseInt(a[1]) - 1, Std.parseInt(a[2]), 8, 0, 0);
-		#end
+			var ly = o[1], lm = o[2], ld = o[3], onleap = o[4];
+			var lunar = Lunar.spec(ly, lm, ld, onleap);
+			var a = (o[0]:String).split("-").map(s->Std.parseInt(s));
+			var date = new Date(a[0], a[1] - 1, a[2], 0, 0, 0);
 			var time = lunar.time;
-			if (time.getFullYear() == date.getFullYear()
+			if (!(time.getFullYear() == date.getFullYear()
 			&& time.getMonth() == date.getMonth()
 			&& time.getDate() == date.getDate()
-			) {
-				trace("DONE > " + lunar.toString() + ", [" + o.join(",") + "]");
-			} else {
-				trace("FAIL > " + lunar.toString() + ", [" + o.join(",") + ' ${simpledate(time)}]');
+			)) {
+				throw ("spec FAIL > " + "[" + o.join(",") + '], calc: ${simpledate(time)}]');
 			}
 		}
 	}
 
 	static function lunarmake() {
 		for (o in data) {
-			lunareq(o[0], o[1], o[2], o[3], o[4]);
-		}
-	}
-
-	static function lunareq(sd:String, ly:Int, lm:Int, ld:Int, onleap:Bool) {
-	#if !(hl || neko)
-		var date = Date.fromString(sd);
-	#else
-		// Date.fromString error on hashlink
-		var a = sd.split("-");
-		var date = new Date(Std.parseInt(a[0]), Std.parseInt(a[1]) - 1, Std.parseInt(a[2]), 8, 0, 0);
-	#end
-		var lunar = Lunar.make(date);
-		if(lunar.year == ly && lunar.month == lm && lunar.date == ld && lunar.leap == onleap) {
-			trace("DONE > " + lunar.toString() + ' {$sd} ${simpledate(lunar.time)}');
-		} else {
-			trace("FAIL > " + lunar.toString() + ' {$sd == [$ly, $lm, $ld, $onleap]}');
+			var ly = o[1], lm = o[2], ld = o[3], onleap = o[4];
+			var a = (o[0]: String).split("-").map(s->Std.parseInt(s));
+			var date = new Date(a[0], a[1] - 1, a[2], 0, 0, 0);
+			var lunar = Lunar.make(date);
+			if(!(lunar.year == ly && lunar.month == lm && lunar.date == ld && lunar.leap == onleap)) {
+				throw ('make FAIL > ' + lunar.toString() + ' {${o[0]} == [$ly, $lm, $ld, $onleap]}');
+			}
 		}
 	}
 

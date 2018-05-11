@@ -31,7 +31,7 @@ class Lottery {
 	}
 }
 
-abstract Balls(haxe.io.Bytes) to haxe.io.Bytes {
+@:native("LtBalls") abstract Balls(haxe.io.Bytes) to haxe.io.Bytes {
 
 	public inline function get(ball: Int): Attr return cast this.get(ball);
 	public inline function set(ball: Int, attr: Attr) this.set(ball, attr);
@@ -104,15 +104,15 @@ abstract Balls(haxe.io.Bytes) to haxe.io.Bytes {
 	public static inline function isOdd(i) return (i & 1) == 1;
 
 	// 小数 与 十位数相加, 合Dan,shuang
-	public static inline function hsum(i) return Std.int(i / 10) + (i % 10);
-	public static inline function hhead(i, n) return Std.int(i / 10) == n;
-	public static inline function htail(i, n) return (i % 10) == n;
+	public static inline function hsum(i:Int):Int return Std.int(i / 10) + (i % 10);
+	public static inline function hhead(i:Int, n:Int):Bool return Std.int(i / 10) == n;
+	public static inline function htail(i:Int, n:Int):Bool return (i % 10) == n;
 }
 
 /**
 Xiao 占低 4 位, Color 占高位
 */
-abstract Attr(Int) to Int {
+extern abstract Attr(Int) to Int {
 
 	public var xiao(get, set): Xiao;
 	public var color(get, set): Color;
@@ -120,12 +120,12 @@ abstract Attr(Int) to Int {
 	inline function get_xiao(): Xiao return cast this & 0xF;
 	inline function get_color(): Color return cast (this >> 4) & 3;
 
-	inline function set_xiao(x: Xiao) {
+	inline function set_xiao(x: Xiao): Xiao {
 		this = (this & 0xF0) | x;
 		return x;
 	}
 
-	inline function set_color(c: Color) {
+	inline function set_color(c: Color): Color {
 		this = (this & 0xF) | (c << 4);
 		return c;
 	}
