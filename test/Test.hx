@@ -1,10 +1,7 @@
 package test;
 
-import haxe.PosInfos;
 import lunar.Lunar;
 import lunar.Label;
-import lunar.Utils;
-import lunar.Lottery;
 import lunar.Data;
 
 @:access(lunar) class Test {
@@ -12,45 +9,13 @@ import lunar.Data;
 	static function main() {
 		lunarmake();
 		lunarspec();
-		//testlabel();
-		testLollery();
+		testData();
+		testlabel();
 		trace("done!");
 	}
 
-	static function testLollery() {
-		var balls = new Balls(2016);
-		var values = [
-			{
-				data: [1, 2, 7, 8, 12, 13, 18, 19, 23, 24, 29, 30, 34, 35, 40, 45, 46],
-				fn: function(i:Int, attr:Attr):Bool {return attr.color == Red;},
-			} ,
-			{
-				data: [5, 6, 11, 16, 17, 21, 22, 27, 28, 32, 33, 38, 39, 43, 44, 49],
-				fn: function(i:Int, attr:Attr):Bool {return attr.color == Green;},
-			},
-			{
-				data: [3, 4, 9, 10, 14, 15, 20, 25, 26, 31, 36, 37, 41, 42, 47, 48],
-				fn: function(i:Int, attr:Attr):Bool {return attr.color == Blue;},
-			},
-			{
-				data: [9, 21, 33, 45],
-				fn: function(i:Int, attr:Attr):Bool {return attr.xiao == Shu;},
-			},
-			{
-				data: [1, 13, 25, 37, 49],
-				fn: function(i:Int, attr:Attr):Bool {return attr.xiao == Hou;},
-			},
-			{
-				data: [10, 22, 34, 46],
-				fn: function(i:Int, attr:Attr):Bool {return attr.xiao == Zhu;},
-			},
-		];
-		for (i in 0...values.length) {
-			var item = values[i];
-			var result = balls.filter(item.fn);
-			if (!eqa(result, item.data))
-				throw ("Lollery Fails: "+ i +" > d: " + item.data.toString() + " == r: " + result.toString());
-		}
+	static function testData() {
+		eq(Data.CN_EXT.length == Data.PY_EXT.length);
 	}
 
 	static function testlabel() {
@@ -72,7 +37,7 @@ import lunar.Data;
 		["2017-06-26", 2017, 6, 3, false],
 		["1986-11-11", 1986, 10, 10, false],
 		["2010-11-25", 2010, 10, 20, false],
-#if !(hl || neko)
+#if !(hl || neko || macro || eval)
 		["1970-02-06", 1970, 1, 1, false],
 		["1970-01-01", 1969, 11, 24, false],
 		["1970-01-02", 1969, 11, 25, false],
@@ -125,5 +90,9 @@ import lunar.Data;
 
 	static public function simpledate(d: Date) {
 		return '${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}';
+	}
+
+	static public function eq(b, ?pos: haxe.PosInfos) {
+		if (!b) throw "Error LineNumber: " + pos.lineNumber;
 	}
 }

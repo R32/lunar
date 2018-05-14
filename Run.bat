@@ -2,7 +2,9 @@
 cd bin
 ::@echo ----- nodejs ------
 node test.js
-@echo ----- hl ------
+@echo ----- neko ------
+neko test.n
+@echo ----- hl -------
 hl test.hl
-start test.swf
+::start test.swf
 pause

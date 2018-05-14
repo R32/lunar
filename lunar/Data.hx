@@ -1,14 +1,21 @@
 package lunar;
 
+@:native("LData") class Data {
+	@:native("a") public static var CN_MONTHS = ["正月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "腊月"];
 
-class Data {
-	public static var CN_MONTHS = ["正月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "腊月"];
-	public static var CN_NUMS = ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"];
+	@:native("b") public static var CN_NUMS = ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"];
 
-	public static var SX_CN = ["鼠", "牛", "虎", "兔", "龙", "蛇", "马", "羊", "猴", "鸡", "狗", "猪"];
-	public static var SX_PY = ["shu", "niu", "hu", "tu", "long", "she", "ma", "yang", "hou", "ji", "gou", "zhu"];
+	@:native("c") public static var CN_EXT = ["鼠", "牛", "虎", "兔", "龙", "蛇", "马", "羊", "猴", "鸡", "狗", "猪"];
 
-	public static var BS_CN = ["\u7EA2", "\u7EA2\u5355", "\u7EA2\u53CC", "\u7EFF", "\u7EFF\u5355", "\u7EFF\u53CC", "\u84DD", "\u84DD\u5355", "\u84DD\u53CC"];
-	public static var BS_PY = ["red", "red1", "red2", "green", "green1", "green2", "blue", "blue1", "blue2"];
+	@:native("d") public static var PY_EXT = ["shu", "niu", "hu", "tu", "long", "she", "ma", "yang", "hou", "ji", "gou", "zhu"];
+
+	/**
+	* e.g: y2i(2016) => 8, then CN_EXT[8] => "猴"
+	* @param y: full year. Note: Do not accept `0` as parameter
+	* @return [0-11]
+	*/
+	public static function y2i(y:Int):Int {
+		var n = (y > 0 ? y - 4 : y - 3) % 12;
+		return n < 0 ? n + 12 : n;
+	}
 }
-

@@ -2,13 +2,12 @@ package lunar;
 
 import lunar.Data.*;
 
-class Label{
-
+class Label {
 	public var year(default, null):String;
 	public var yearsx(default, null):String;
 	public var month(default, null):String;
 	public var date(default, null):String;
-	public var leap(default, null):Bool;
+	public var leap(default, null):String;
 
 	public function new(lunar: Lunar) {
 		var buff = new StringBuf();
@@ -20,7 +19,7 @@ class Label{
 		}
 		this.year = buff.toString();
 
-		this.yearsx = SX_CN[Utils.indexSx(lunar.year)];
+		this.yearsx = CN_EXT[y2i(lunar.year)];
 
 		this.month = CN_MONTHS[lunar.month - 1];
 
@@ -33,11 +32,11 @@ class Label{
 			if (day == 20) day = 30;
 			this.date = "廿" + CN_NUMS[day - 20];
 		}
-		this.leap = lunar.leap;
+		this.leap = lunar.leap ? "闰" : "";
 	}
 
 	public function toString() {
-		return '${year}年 ${month}${(leap ? "闰" : "")} ${date} ${yearsx}';
+		return '${year}年 ${month}${leap} ${date} ${yearsx}';
 	}
 
 	// need to reverse

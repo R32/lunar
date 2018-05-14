@@ -5,6 +5,7 @@
 
 --each
 --macro exclude('js.html.compat')
+-D js_es=3
 -js bin/test.js
 
 --next
