@@ -10,11 +10,11 @@ package lunar;
 	@:native("d") public static var PY_EXT = ["shu", "niu", "hu", "tu", "long", "she", "ma", "yang", "hou", "ji", "gou", "zhu"];
 
 	/**
-	* e.g: y2i(2016) => 8, then CN_EXT[8] => "猴"
+	* e.g: yearIndex(2016) => 8, then CN_EXT[8] => "猴"
 	* @param y: full year. Note: Do not accept `0` as parameter
 	* @return [0-11]
 	*/
-	public static function y2i(y:Int):Int {
+	public static function yearIndex(y:Int):Int {
 		var n = (y > 0 ? y - 4 : y - 3) % 12;
 		return n < 0 ? n + 12 : n;
 	}

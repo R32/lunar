@@ -19,7 +19,7 @@ class Label {
 		}
 		this.year = buff.toString();
 
-		this.yearsx = CN_EXT[y2i(lunar.year)];
+		this.yearsx = CN_EXT[yearIndex(lunar.year)];
 
 		this.month = CN_MONTHS[lunar.month - 1];
 
