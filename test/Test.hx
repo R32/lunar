@@ -9,13 +9,8 @@ import lunar.Data;
 	static function main() {
 		lunarmake();
 		lunarspec();
-		testData();
 		testlabel();
 		trace("done!");
-	}
-
-	static function testData() {
-		eq(Data.CN_EXT.length == Data.PY_EXT.length);
 	}
 
 	static function testlabel() {
