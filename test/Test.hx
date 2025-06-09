@@ -10,7 +10,17 @@ import lunar.Data;
 		lunarmake();
 		lunarspec();
 		testlabel();
+		year_index();
 		trace("done!");
+	}
+
+	static function year_index() {
+		var i = 10; // yearIndex(1970)
+		for (y in 1970...2051) {
+			eq(i == Data.yearIndex(y));
+			i++;
+			i = i % 12;
+		}
 	}
 
 	static function testlabel() {

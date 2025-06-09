@@ -3,23 +3,18 @@ package lunar;
 import lunar.Data.*;
 
 class Label {
-	public var year(default, null):String;
-	public var yearsx(default, null):String;
-	public var month(default, null):String;
-	public var date(default, null):String;
-	public var leap(default, null):String;
+	public var year(default, null) : String;
+	public var month(default, null) : String;
+	public var date(default, null) : String;
+	public var leap(default, null) :String;
+	public var ysx(default, null) : String;
 
-	public function new(lunar: Lunar) {
-		var buff = new StringBuf();
-		var a = [];
-		var len = itoa(lunar.year, a);
-		while (len > 0) {
-			-- len;
-			buff.add(CN_NUMS[a[len]]);
-		}
-		this.year = buff.toString();
+	public function new( lunar : Lunar ) {
+		var year = lunar.year;
+		this.year = CN_NUMS[Std.int(year / 1000) % 10] + CN_NUMS[Std.int(year / 100) % 10] +
+			CN_NUMS[Std.int(year / 10) % 10] + CN_NUMS[Std.int(year % 10)];
 
-		this.yearsx = CN_XIAO[yearIndex(lunar.year)];
+		this.ysx = CN_XIAO[yearIndex(lunar.year)];
 
 		this.month = CN_MONTHS[lunar.month - 1];
 
@@ -36,17 +31,6 @@ class Label {
 	}
 
 	public function toString() {
-		return '${year}年 ${month}${leap} ${date} ${yearsx}';
-	}
-
-	// need to reverse
-	static function itoa(i:Int, a:Array<Int>):Int {
-		var ct = 0;
-		while (i > 0) {
-			a.push( i % 10);
-			i = Std.int(i / 10);
-			++ ct;
-		}
-		return ct;
+		return '${year}年 ${month}${leap} ${date} ${ysx}';
 	}
 }

@@ -2,16 +2,15 @@ package lunar;
 
 @:native("Lunar") class Lunar {
 
-	public var time(default, null):Date; // 公历时间
-	public var info(default, null):Info;
+	public var time(default, null)  : Date; // Gregorian calendar time
+	public var info(default, null)  : Info;
+	public var year(default, null)  : Int;  // Lunar year
+	public var month(default, null) : Int;  // Lunar month [1 ~ 12]
+	public var date(default, null)  : Int;  // Lunar day
+	public var leap(default, null)  : Bool; // Whether the current date is in a "leap month"
+	public var days(default, null)  : Int;  // Number of days passed since Lunar New Year's Day (1st day of 1st lunar month)
 
-	public var year(default, null): Int; // 农历年
-	public var month(default, null):Int; // 农历月 1 ~ 12
-	public var date(default, null): Int; // 农历号
-	public var leap(default, null):Bool; // 当前日期是否处于"闰月"
-	public var days(default, null): Int; // 从农历 1 月 1 号到现在已经有多少天了
-
-	private function new(ly:Int, lm:Int, ld:Int, le:Bool, ds:Int, t: Date, i:Info) {
+	private function new( ly : Int, lm : Int, ld : Int, le : Bool, ds : Int, t : Date, i : Info ) {
 		year = ly;
 		month = lm;
 		date = ld;
@@ -21,15 +20,15 @@ package lunar;
 		info = i;
 	}
 
-	public function toString():String {
+	public function toString() : String {
 		return '[lunar: ${year}, ${month}, ${date}, ${leap}, ${days}]';
 	}
 
-	public static inline function now():Lunar {
+	public static inline function now() : Lunar {
 		return Lunar.make(Date.now());
 	}
 
-	public static function make(time: Date) {
+	public static function make( time : Date ) {
 		var h = Std.int(time.getTime() / MICROSECONDS_IN_HOUR);
 		var tyear = time.getFullYear();
 		var start = getCacheByYear(tyear);
@@ -69,15 +68,15 @@ package lunar;
 		return new Lunar(tyear, tmonth, tdate, tleap, ds, time, tinfo);
 	}
 
-	/**
-	*
-	* @param ly [1900 ~ 2010]
-	* @param lm [1 ~ 12]
-	* @param ld [1 ~ 30]
-	* @param onleap 指定的月份是否为闰月?
-	* @return
-	*/
-	public static function spec(ly:Int, lm:Int, ld:Int, onleap:Bool):Lunar {
+	/*
+	 *
+	 * @param ly [1900 ~ 2010]
+	 * @param lm [1 ~ 12]
+	 * @param ld [1 ~ 30]
+	 * @param onleap 指定的月份是否为闰月?
+	 * @return
+	 */
+	public static function spec( ly : Int, lm : Int, ld : Int, onleap : Bool ) : Lunar {
 		var start = getCacheByYear(ly);
 		var info = new Info(ly);
 		var ds = 0;
@@ -116,8 +115,8 @@ package lunar;
 		return CACHES.get(i);
 	}
 
-	static var CI: Int;
-	static var CACHES: haxe.ds.Vector<Int>;
+	static var CI : Int;
+	static var CACHES : haxe.ds.Vector<Int>;
 	public static inline var MICROSECONDS_IN_HOUR = 1.0 * 60 * 60 * 1000;
 }
 
@@ -132,17 +131,18 @@ package lunar;
 	inline function get_bmonths() return (this >> 4) & 0xFFF;
 	inline function get_leapbig() return (this & 0x10000) != 0;
 
-	/**
-	lyear: 表示农历年
-	*/
-	inline public function new(lyear: Int) reset(lyear);
+	/*
+	 * lyear : Lunar year
+	 */
+	inline public function new( lyear : Int ) reset(lyear);
 
-	inline public function reset(lyear: Int) this = DAT[index(lyear)];
+	inline public function reset( lyear : Int ) this = DAT[index(lyear)];
 
 	inline function leapDays() return leap > 0 ? (leapbig ? 30 : 29) : 0;
-	/**
-	* 返回整个一年的天数
-	*/
+
+	/*
+	 * 返回整个一年的天数
+	 */
 	public function daysofYear() {
 		var sum = 348;
 		for (i in 4...12 + 4) {
@@ -151,10 +151,10 @@ package lunar;
 		return sum + leapDays();
 	}
 
-	/**
-	* m in [1-12]
-	*/
-	inline public function isBigMonth(m:Int): Bool {
+	/*
+	 * m in [1-12]
+	 */
+	inline public function isBigMonth( m : Int ) : Bool {
 		return this & (1 << (16 - m)) != 0;
 	}
 
@@ -163,7 +163,7 @@ package lunar;
 	}
 
 	// binString(0xF, 8) => "00001111"
-	static function binString(x:Int, w:Int) {
+	static function binString( x : Int, w : Int ) {
 		var ret = [];
 		ret[w - 1] = 0;
 		for (i in 0...w)
@@ -171,25 +171,24 @@ package lunar;
 		return ret.join("");
 	}
 
-	public static inline function index(ly:Int) return ly - DAT_START;
+	public static inline function index( lyear : Int ) return lyear - DAT_START;
 
 #if !(hl || neko || macro || eval)
-	public static inline var DAT_START = 1900;  // 只能计算 [1900~2100]
+	public static inline var DAT_START = 1900;
 	public static inline var DAT_LENGTH = 2100 - 1900 + 1;
 #else
-	public static inline var DAT_START = 1970;  // hashlink 只能计算 1970 之后的年份
+	public static inline var DAT_START = 1970;
 	public static inline var DAT_LENGTH = 2100 - 1970 + 1;
 #end
 
 
-	/**
-	*	   FEDC BA98 7654 3210
-	* 0000 0000 0000 0000 0000
-	*                    |3210|		- 如果不是闰年值为 0, 是闰年则值表示为 闰月月份 1~12
-	*     |1234 5678 9ABC| 			- 1 为大月 30天, 0为小月29天. 注意: 1月~12月对应的是 F(15)~4
-	*   |1|  						- 第 16 位, 当值为 1 则为闰大月, 否则闰小月, 当 leap 大于 0时有效.
-	 数据复制来自 https://github.com/QingYolan/Calendar/blob/gh-pages/js/data.js , 2050 年以后的数据正确性未知
-	*/
+	/*
+	 * 0000 0000 0000 0000 0000  - BIT
+	 *                    |3210| - 如果不是闰年值为 0, 是闰年则值表示为 闰月月份 1~12
+	 *     |1234 5678 9ABC|      - 1 为大月 30天, 0为小月29天. 注意: 1月~12月对应的是 F(15)~4
+	 *   |1|                     - 第 16 位, 当值为 1 则为闰大月, 否则闰小月, 当 leap 大于 0时有效.
+	 * Copies from https://github.com/QingYolan/Calendar/blob/gh-pages/js/data.js
+	 */
 	static var DAT = [
 	#if !(hl || neko || macro || eval)
 		0x04bd8, 0x04ae0, 0x0a570, 0x054d5, 0x0d260,
